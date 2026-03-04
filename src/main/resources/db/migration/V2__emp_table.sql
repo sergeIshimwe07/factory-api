@@ -3,6 +3,7 @@ create table employees (
     first_name varchar(255) not null,
     last_name varchar(255) not null,
     names varchar(255) not null,
+    email varchar(255) not null unique,
     position int not null,
     `password` varchar(255) DEFAULT NULL,
     employee_type varchar(255) DEFAULT NULL,
