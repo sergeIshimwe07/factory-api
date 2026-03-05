@@ -1,8 +1,6 @@
 package com.factory.factory_erp.service;
 
-import com.factory.factory_erp.dto.AuthResponse;
-import com.factory.factory_erp.dto.LoginRequest;
-import com.factory.factory_erp.dto.SignupRequest;
+import com.factory.factory_erp.dto.*;
 import com.factory.factory_erp.exception.AuthenticationException;
 import com.factory.factory_erp.model.Employee;
 import com.factory.factory_erp.repository.EmployeeRepository;
@@ -28,10 +26,10 @@ public class AuthenticationService {
     /**
      * Login user
      */
-    public AuthResponse login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest) {
         // Find employee by email
         Employee employee = employeeRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new AuthenticationException("Employee not found"));
+                .orElseThrow(() -> new AuthenticationException("Invalid email or password"));
         
         // Check if employee can login
         if (!employee.getCanLogin()) {
@@ -40,38 +38,32 @@ public class AuthenticationService {
         
         // Validate password
         if (employee.getPassword() == null || !passwordEncoder.matches(loginRequest.getPassword(), employee.getPassword())) {
-            throw new AuthenticationException("Invalid credentials");
+            throw new AuthenticationException("Invalid email or password");
         }
         
         // Update last login
         employee.setLastLogin(LocalDateTime.now());
         employeeRepository.save(employee);
         
-        // Generate token
-        String token = jwtTokenProvider.generateToken(employee);
+        // Generate tokens
+        String accessToken = jwtTokenProvider.generateAccessToken(employee);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(employee);
+        
+        // Build user info
+        UserInfo userInfo = buildUserInfo(employee);
         
         // Return response
-        return AuthResponse.builder()
-                .token(token)
-                .type("Bearer")
-                .id(employee.getId())
-                .firstName(employee.getFirstName())
-                .lastName(employee.getLastName())
-                .names(employee.getNames())
-                .email(employee.getEmail())
-                .position(employee.getPosition())
-                .employeeType(employee.getEmployeeType())
-                .salary(employee.getSalary())
-                .lastLogin(employee.getLastLogin())
-                .status(employee.getStatus())
-                .canLogin(employee.getCanLogin())
+        return LoginResponse.builder()
+                .user(userInfo)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
     
     /**
      * Signup user
      */
-    public AuthResponse signup(SignupRequest signupRequest) {
+    public LoginResponse signup(SignupRequest signupRequest) {
         // Check if employee already exists by email
         if (employeeRepository.findByEmail(signupRequest.getEmail()).isPresent()) {
             throw new AuthenticationException("Employee with this email already exists");
@@ -95,24 +87,33 @@ public class AuthenticationService {
         // Save employee
         employee = employeeRepository.save(employee);
         
-        // Generate token
-        String token = jwtTokenProvider.generateToken(employee);
+        // Generate tokens
+        String accessToken = jwtTokenProvider.generateAccessToken(employee);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(employee);
+        
+        // Build user info
+        UserInfo userInfo = buildUserInfo(employee);
         
         // Return response
-        return AuthResponse.builder()
-                .token(token)
-                .type("Bearer")
+        return LoginResponse.builder()
+                .user(userInfo)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+    
+    /**
+     * Build UserInfo from Employee
+     */
+    private UserInfo buildUserInfo(Employee employee) {
+        return UserInfo.builder()
                 .id(employee.getId())
-                .firstName(employee.getFirstName())
-                .lastName(employee.getLastName())
-                .names(employee.getNames())
+                .name(employee.getNames())
                 .email(employee.getEmail())
-                .position(employee.getPosition())
-                .employeeType(employee.getEmployeeType())
-                .salary(employee.getSalary())
-                .lastLogin(employee.getLastLogin())
-                .status(employee.getStatus())
-                .canLogin(employee.getCanLogin())
+                .role(employee.getEmployeeType() != null ? employee.getEmployeeType() : "employee")
+                .isActive(employee.getCanLogin())
+                .createdAt(employee.getCreatedAt())
+                .updatedAt(employee.getUpdatedAt())
                 .build();
     }
 }

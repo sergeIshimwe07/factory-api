@@ -20,10 +20,13 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long jwtExpirationMs;
     
+    @Value("${jwt.refresh-expiration:604800000}")
+    private long refreshTokenExpirationMs;
+    
     /**
-     * Generate JWT token from Employee
+     * Generate access token from Employee
      */
-    public String generateToken(Employee employee) {
+    public String generateAccessToken(Employee employee) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", employee.getId());
         claims.put("firstName", employee.getFirstName());
@@ -34,16 +37,36 @@ public class JwtTokenProvider {
         claims.put("employeeType", employee.getEmployeeType());
         claims.put("status", employee.getStatus());
         claims.put("canLogin", employee.getCanLogin());
+        claims.put("type", "access");
         
-        return createToken(claims, employee.getEmail());
+        return createToken(claims, employee.getEmail(), jwtExpirationMs);
     }
     
     /**
-     * Create JWT token
+     * Generate refresh token from Employee
      */
-    private String createToken(Map<String, Object> claims, String subject) {
+    public String generateRefreshToken(Employee employee) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("id", employee.getId());
+        claims.put("email", employee.getEmail());
+        claims.put("type", "refresh");
+        
+        return createToken(claims, employee.getEmail(), refreshTokenExpirationMs);
+    }
+    
+    /**
+     * Generate JWT token (legacy method for backward compatibility)
+     */
+    public String generateToken(Employee employee) {
+        return generateAccessToken(employee);
+    }
+    
+    /**
+     * Create JWT token with custom expiration
+     */
+    private String createToken(Map<String, Object> claims, String subject, long expirationMs) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+        Date expiryDate = new Date(now.getTime() + expirationMs);
         
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
         

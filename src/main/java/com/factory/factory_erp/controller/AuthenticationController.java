@@ -1,7 +1,7 @@
 package com.factory.factory_erp.controller;
 
-import com.factory.factory_erp.dto.AuthResponse;
 import com.factory.factory_erp.dto.LoginRequest;
+import com.factory.factory_erp.dto.LoginResponse;
 import com.factory.factory_erp.dto.SignupRequest;
 import com.factory.factory_erp.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +24,8 @@ public class AuthenticationController {
      * Request body: { "email": "user@example.com", "password": "password" }
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        AuthResponse response = authenticationService.login(loginRequest);
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        LoginResponse response = authenticationService.login(loginRequest);
         return ResponseEntity.ok(response);
     }
     
@@ -36,8 +36,8 @@ public class AuthenticationController {
      *                 "password": "...", "position": 0, "employeeType": "...", "salary": 0.0 }
      */
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
-        AuthResponse response = authenticationService.signup(signupRequest);
+    public ResponseEntity<LoginResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
+        LoginResponse response = authenticationService.signup(signupRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
