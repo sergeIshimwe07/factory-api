@@ -1,10 +1,11 @@
 package com.factory.factory_erp.entity;
 
-import com.factory.factory_erp.entity.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -27,9 +28,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
     
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserRole role;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Builder.Default
+    private Set<UserRole> userRoles = new HashSet<>();
     
     @Column(length = 255)
     private String avatar;

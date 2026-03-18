@@ -1,1 +1,0 @@
-insert into positions (title) values ('Manager');

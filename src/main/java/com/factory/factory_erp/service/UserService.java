@@ -3,7 +3,6 @@ package com.factory.factory_erp.service;
 import com.factory.factory_erp.dto.request.CreateUserRequest;
 import com.factory.factory_erp.dto.response.PageResponse;
 import com.factory.factory_erp.entity.User;
-import com.factory.factory_erp.entity.enums.UserRole;
 import com.factory.factory_erp.exception.ResourceNotFoundException;
 import com.factory.factory_erp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +24,7 @@ public class UserService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleManagementService roleManagementService;
     
     @Transactional(readOnly = true)
     public PageResponse<Map<String, Object>> getAllUsers(int page, int limit) {
@@ -48,10 +48,14 @@ public class UserService {
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(UserRole.valueOf(request.getRole()))
                 .build();
         
         User saved = userRepository.save(user);
+        
+        if (request.getRole() != null && !request.getRole().isEmpty()) {
+            roleManagementService.assignRoleToUser(saved.getId(), request.getRole(), null);
+        }
+        
         return mapToResponse(saved);
     }
     
@@ -79,7 +83,14 @@ public class UserService {
         response.put("id", user.getUserId());
         response.put("name", user.getName());
         response.put("email", user.getEmail());
-        response.put("role", user.getRole().name());
+        
+        List<String> roles = user.getUserRoles().stream()
+                .filter(ur -> ur.getIsActive())
+                .map(ur -> ur.getRole().getRoleCode())
+                .collect(Collectors.toList());
+        
+        response.put("roles", roles);
+        response.put("role", roles.isEmpty() ? "USER" : roles.get(0));
         response.put("status", user.getIsActive() ? "active" : "inactive");
         response.put("lastLogin", user.getLastLogin());
         return response;

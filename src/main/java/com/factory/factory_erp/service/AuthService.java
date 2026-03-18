@@ -34,9 +34,14 @@ public class AuthService {
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
         
+        java.util.List<String> roles = user.getUserRoles().stream()
+                .filter(userRole -> userRole.getIsActive())
+                .map(userRole -> userRole.getRole().getRoleCode())
+                .collect(java.util.stream.Collectors.toList());
+        
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getUserId());
-        claims.put("role", user.getRole().name());
+        claims.put("roles", roles);
         
         String token = jwtUtil.generateToken(user.getEmail(), claims);
         
@@ -46,7 +51,7 @@ public class AuthService {
                         .id(user.getUserId())
                         .name(user.getName())
                         .email(user.getEmail())
-                        .role(user.getRole().name())
+                        .role(roles.isEmpty() ? "USER" : roles.get(0))
                         .avatar(user.getAvatar())
                         .build())
                 .build();
