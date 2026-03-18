@@ -1,2 +1,2 @@
-insert into employees (first_name, last_name, names, position,  employee_type, salary, last_login, can_login) values
-('Serge', 'Ishimwe', 'Serge Ishimwe', 1, 'full-time', 60000.00, now(), true);
+insert into employees (first_name, last_name, names, email, position, password, employee_type, salary, last_login, can_login) values
+('Serge', 'Ishimwe', 'Serge Ishimwe', 'serge@factory.com', 1, '$2a$10$..XUKoNLhFnscK0ZOVqOZeFO.dJfXi.RzaT97s/DbAZW68r5zzVxC', 'full-time', 60000.00, now(), true);
