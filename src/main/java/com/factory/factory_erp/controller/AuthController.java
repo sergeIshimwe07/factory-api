@@ -1,5 +1,6 @@
 package com.factory.factory_erp.controller;
 
+import com.factory.factory_erp.dto.SignupRequest;
 import com.factory.factory_erp.dto.request.LoginRequest;
 import com.factory.factory_erp.dto.response.ApiResponse;
 import com.factory.factory_erp.dto.response.LoginResponse;
@@ -20,5 +21,11 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<ApiResponse<LoginResponse>> signup(@Valid @RequestBody SignupRequest request) {
+        LoginResponse response = authService.signup(request.getNames(), request.getEmail(), request.getPassword());
+        return ResponseEntity.ok(ApiResponse.success(response, "Signup successful"));
     }
 }

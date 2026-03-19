@@ -8,6 +8,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,15 @@ public class PermissionAspect {
         String email = authentication.getName();
         String featureCode = requirePermission.feature();
         String permission = requirePermission.permission().name();
+
+        String permissionAuthority = "PERM_" + featureCode + ":" + permission;
+        boolean hasPermissionFromToken = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(permissionAuthority::equals);
+
+        if (hasPermissionFromToken) {
+            return;
+        }
         
         boolean hasPermission = permissionService.hasPermission(email, featureCode, permission);
         

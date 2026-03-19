@@ -38,8 +38,12 @@ public class JwtUtil {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
+
+    public Claims extractAllClaims(String token) {
+        return extractAllClaimsInternal(token);
+    }
     
-    private Claims extractAllClaims(String token) {
+    private Claims extractAllClaimsInternal(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
@@ -78,7 +82,7 @@ public class JwtUtil {
     
     public Boolean validateToken(String token) {
         try {
-            extractAllClaims(token);
+            extractAllClaimsInternal(token);
             return !isTokenExpired(token);
         } catch (JwtException | IllegalArgumentException e) {
             return false;

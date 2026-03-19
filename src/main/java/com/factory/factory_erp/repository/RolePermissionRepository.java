@@ -13,6 +13,9 @@ import java.util.Optional;
 public interface RolePermissionRepository extends JpaRepository<RolePermission, Long> {
     
     List<RolePermission> findByRoleId(Long roleId);
+
+    @Query("SELECT rp FROM RolePermission rp WHERE rp.role.id IN :roleIds")
+    List<RolePermission> findByRoleIds(@Param("roleIds") List<Long> roleIds);
     
     Optional<RolePermission> findByRoleIdAndFeatureId(Long roleId, Long featureId);
     

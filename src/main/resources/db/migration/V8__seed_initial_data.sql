@@ -1,7 +1,7 @@
 -- Seed Default Admin User (password: SecurePass123)
 -- Password is BCrypt hashed
 INSERT INTO users (user_id, name, email, password, role, is_active) VALUES
-('usr_001', 'Admin User', 'admin@factory.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin', TRUE);
+('usr_001', 'Admin User', 'serge@factory.com', '$2a$10$..XUKoNLhFnscK0ZOVqOZeFO.dJfXi.RzaT97s/DbAZW68r5zzVxC', 'admin', TRUE);
 
 -- Seed Chart of Accounts
 INSERT INTO accounts (account_id, code, name, type, balance, status) VALUES

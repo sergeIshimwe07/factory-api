@@ -24,12 +24,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
         
-        if (!user.getIsActive()) {
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
             throw new UsernameNotFoundException("User account is inactive");
         }
         
         List<SimpleGrantedAuthority> authorities = user.getUserRoles().stream()
-                .filter(userRole -> userRole.getIsActive())
+                .filter(userRole -> Boolean.TRUE.equals(userRole.getIsActive()))
                 .map(userRole -> new SimpleGrantedAuthority("ROLE_" + userRole.getRole().getRoleCode()))
                 .collect(Collectors.toList());
         
@@ -45,7 +45,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .accountExpired(false)
                 .accountLocked(false)
                 .credentialsExpired(false)
-                .disabled(!user.getIsActive())
+                .disabled(!Boolean.TRUE.equals(user.getIsActive()))
                 .build();
     }
 }
