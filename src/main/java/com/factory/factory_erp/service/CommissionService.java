@@ -113,7 +113,7 @@ public class CommissionService {
         Map<String, Object> response = new HashMap<>();
         response.put("id", commission.getCommissionId());
         response.put("agentId", commission.getAgent().getUserId());
-        response.put("agentName", commission.getAgent().getName());
+        response.put("agentName", commission.getAgent().getNames());
         response.put("period", commission.getPeriod());
         response.put("saleAmount", commission.getSaleAmount());
         response.put("rate", commission.getRate());

@@ -130,7 +130,7 @@ public class SalesOrderService {
                 .total(order.getTotal())
                 .status(order.getStatus().name())
                 .paymentStatus(order.getPaymentStatus().name())
-                .agent(order.getAgent() != null ? order.getAgent().getName() : null)
+                .agent(order.getAgent() != null ? order.getAgent().getNames() : null)
                 .notes(order.getNotes())
                 .build();
     }

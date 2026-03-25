@@ -20,7 +20,13 @@ public class User extends BaseEntity {
     private String userId;
     
     @Column(nullable = false, length = 100)
-    private String name;
+    private String firstName;
+    
+    @Column(nullable = false, length = 100)
+    private String lastName;
+    
+    @Column(nullable = false, length = 100)
+    private String names;
     
     @Column(unique = true, nullable = false, length = 100)
     private String email;
@@ -49,3 +55,4 @@ public class User extends BaseEntity {
         }
     }
 }
+

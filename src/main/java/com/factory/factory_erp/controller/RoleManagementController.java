@@ -31,10 +31,10 @@ public class RoleManagementController {
     @RequirePermission(feature = "ROLE_MANAGEMENT", permission = RequirePermission.PermissionType.EDIT)
     public ResponseEntity<Map<String, String>> assignRole(
             @RequestParam Long userId,
-            @RequestParam String roleCode,
+            @RequestParam Long roleId,
             Authentication authentication) {
         
-        roleManagementService.assignRoleToUser(userId, roleCode, null);
+        roleManagementService.assignRoleToUser(userId, roleId, null);
         
         Map<String, String> response = new HashMap<>();
         response.put("message", "Role assigned successfully");
@@ -45,9 +45,9 @@ public class RoleManagementController {
     @RequirePermission(feature = "ROLE_MANAGEMENT", permission = RequirePermission.PermissionType.DELETE)
     public ResponseEntity<Map<String, String>> removeRole(
             @RequestParam Long userId,
-            @RequestParam String roleCode) {
+            @RequestParam Long roleId) {
         
-        roleManagementService.removeRoleFromUser(userId, roleCode);
+        roleManagementService.removeRoleFromUser(userId, roleId);
         
         Map<String, String> response = new HashMap<>();
         response.put("message", "Role removed successfully");

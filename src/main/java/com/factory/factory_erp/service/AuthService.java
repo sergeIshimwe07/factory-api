@@ -42,15 +42,17 @@ public class AuthService {
         return buildLoginResponseAndUpdateLastLogin(user);
     }
 
-    public LoginResponse signup(String name, String email, String rawPassword) {
+    public LoginResponse signup(String name, String email, String rawPassword, Long role, String firstName, String lastName) {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email already exists");
         }
 
         User user = User.builder()
-                .name(name)
+                .names(name)
                 .email(email)
                 .password(passwordEncoder.encode(rawPassword))
+                .firstName(firstName)
+                .lastName(lastName)
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -95,7 +97,7 @@ public class AuthService {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getUserId());
-        claims.put("name", user.getName());
+        claims.put("name", user.getNames());
         claims.put("email", user.getEmail());
         claims.put("avatar", user.getAvatar());
         claims.put("roles", roles);
@@ -107,7 +109,7 @@ public class AuthService {
                 .token(token)
                 .user(LoginResponse.UserInfo.builder()
                         .id(user.getUserId())
-                        .name(user.getName())
+                        .name(user.getNames())
                         .email(user.getEmail())
                         .role(roles.isEmpty() ? "USER" : roles.get(0))
                         .avatar(user.getAvatar())

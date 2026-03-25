@@ -45,14 +45,14 @@ public class UserService {
         }
         
         User user = User.builder()
-                .name(request.getName())
+                .names(request.getNames())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
         
         User saved = userRepository.save(user);
         
-        if (request.getRole() != null && !request.getRole().isEmpty()) {
+        if (request.getRole() != null) {
             roleManagementService.assignRoleToUser(saved.getId(), request.getRole(), null);
         }
         
@@ -81,7 +81,7 @@ public class UserService {
     private Map<String, Object> mapToResponse(User user) {
         Map<String, Object> response = new HashMap<>();
         response.put("id", user.getUserId());
-        response.put("name", user.getName());
+        response.put("name", user.getNames());
         response.put("email", user.getEmail());
         
         List<String> roles = user.getUserRoles().stream()

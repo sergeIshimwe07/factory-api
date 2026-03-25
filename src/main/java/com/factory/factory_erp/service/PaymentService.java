@@ -108,7 +108,7 @@ public class PaymentService {
                 .reference(payment.getReference())
                 .notes(payment.getNotes())
                 .createdAt(payment.getCreatedAt())
-                .createdBy(payment.getCreatedBy() != null ? payment.getCreatedBy().getName() : null)
+                .createdBy(payment.getCreatedBy() != null ? payment.getCreatedBy().getNames() : null)
                 .build();
     }
 }

@@ -8,6 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface RoleGroupRepository extends JpaRepository<RoleGroup, Long> {
-    Optional<RoleGroup> findByRoleCode(String roleCode);
-    boolean existsByRoleCode(String roleCode);
+    Optional<RoleGroup> findByRoleCode(Integer roleCode);
+    boolean existsByRoleCode(Integer roleCode);
 }

@@ -102,7 +102,7 @@ public class InventoryService {
         response.put("date", movement.getCreatedAt());
         response.put("reference", movement.getReference());
         response.put("notes", movement.getNotes());
-        response.put("createdBy", movement.getCreatedBy() != null ? movement.getCreatedBy().getName() : null);
+        response.put("createdBy", movement.getCreatedBy() != null ? movement.getCreatedBy().getNames() : null);
         return response;
     }
 }

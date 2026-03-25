@@ -22,11 +22,11 @@ public class RoleManagementService {
     private final UserRoleRepository userRoleRepository;
     
     @Transactional
-    public void assignRoleToUser(Long userId, String roleCode, Long assignedByUserId) {
+    public void assignRoleToUser(Long userId, Long roleCode, Long assignedByUserId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        RoleGroup role = roleGroupRepository.findByRoleCode(roleCode)
+        RoleGroup role = roleGroupRepository.findById(roleCode)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
         
         User assignedBy = assignedByUserId != null ? 
@@ -47,11 +47,11 @@ public class RoleManagementService {
     }
     
     @Transactional
-    public void removeRoleFromUser(Long userId, String roleCode) {
+    public void removeRoleFromUser(Long userId, Long roleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        RoleGroup role = roleGroupRepository.findByRoleCode(roleCode)
+        RoleGroup role = roleGroupRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
         
         userRoleRepository.deleteByUserIdAndRoleId(userId, role.getId());
