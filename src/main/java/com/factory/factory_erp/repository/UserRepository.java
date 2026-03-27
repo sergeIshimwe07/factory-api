@@ -1,7 +1,6 @@
 package com.factory.factory_erp.repository;
 
 import com.factory.factory_erp.entity.User;
-import com.factory.factory_erp.entity.enums.UserRole;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
