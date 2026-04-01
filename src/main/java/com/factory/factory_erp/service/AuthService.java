@@ -104,9 +104,11 @@ public class AuthService {
         claims.put("permissions", permissions);
 
         String token = jwtUtil.generateToken(user.getEmail(), claims);
+        String refreshToken = jwtUtil.generateRefreshToken(user.getEmail(), claims);
 
         return LoginResponse.builder()
-                .token(token)
+                .accessToken(token)
+                .refreshToken(refreshToken) // TODO: Generate actual refresh token
                 .user(LoginResponse.UserInfo.builder()
                         .id(user.getUserId())
                         .name(user.getNames())
