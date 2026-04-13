@@ -62,8 +62,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(ex.getMessage(), "BAD_REQUEST"));
+        String message = ex.getMessage();
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        String code = "BAD_REQUEST";
+        
+        // Check if it's a status transition error
+        if (message != null && message.contains("Invalid status transition")) {
+            status = HttpStatus.CONFLICT;
+            code = "INVALID_STATUS_TRANSITION";
+        } else if (message != null && (message.contains("Cannot delete") || message.contains("Only draft"))) {
+            status = HttpStatus.CONFLICT;
+            code = "INVALID_OPERATION";
+        }
+        
+        return ResponseEntity.status(status)
+                .body(ApiResponse.error(message, code));
     }
     
     @ExceptionHandler(Exception.class)
