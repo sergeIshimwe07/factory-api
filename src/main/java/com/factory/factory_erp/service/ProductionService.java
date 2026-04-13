@@ -1,13 +1,21 @@
 package com.factory.factory_erp.service;
 
+import com.factory.factory_erp.dto.request.BomItemRequest;
+import com.factory.factory_erp.dto.request.CreateBOMRequest;
 import com.factory.factory_erp.dto.request.CreateProductionRequest;
+import com.factory.factory_erp.dto.response.BomItemResponse;
+import com.factory.factory_erp.dto.response.BomResponse;
+import com.factory.factory_erp.dto.response.PaginatedBomResponse;
 import com.factory.factory_erp.dto.response.PageResponse;
 import com.factory.factory_erp.entity.BillOfMaterials;
+import com.factory.factory_erp.entity.BomItem;
+import com.factory.factory_erp.entity.Product;
 import com.factory.factory_erp.entity.ProductionEntry;
 import com.factory.factory_erp.entity.enums.ProductionStatus;
 import com.factory.factory_erp.exception.ResourceNotFoundException;
 import com.factory.factory_erp.repository.BillOfMaterialsRepository;
 import com.factory.factory_erp.repository.ProductionEntryRepository;
+import com.factory.factory_erp.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +34,7 @@ public class ProductionService {
     
     private final ProductionEntryRepository productionEntryRepository;
     private final BillOfMaterialsRepository billOfMaterialsRepository;
+    private final ProductRepository productRepository;
     
     @Transactional(readOnly = true)
     public PageResponse<Map<String, Object>> getAllProductions(int page, int limit, String status) {
@@ -63,15 +72,60 @@ public class ProductionService {
     }
     
     @Transactional(readOnly = true)
-    public PageResponse<Map<String, Object>> getAllBOMs(int page, int limit) {
+    public PaginatedBomResponse getAllBOMs(int page, int limit) {
         Pageable pageable = PageRequest.of(page - 1, limit);
         Page<BillOfMaterials> bomPage = billOfMaterialsRepository.findAll(pageable);
         
-        List<Map<String, Object>> boms = bomPage.getContent().stream()
-                .map(this::mapBOMToResponse)
+        List<BomResponse> boms = bomPage.getContent().stream()
+                .map(this::mapToBomResponse)
                 .collect(Collectors.toList());
         
-        return PageResponse.of(boms, page, limit, bomPage.getTotalElements());
+        return PaginatedBomResponse.of(boms, page, limit, bomPage.getTotalElements());
+    }
+    
+    @Transactional
+    public Map<String, Object> createBOM(CreateBOMRequest request) {
+        // Get the finished product
+        Product finishedProduct = productRepository.findByProductId(request.getFinishedProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", request.getFinishedProductId()));
+        
+        // Create new BOM
+        BillOfMaterials bom = BillOfMaterials.builder()
+                .finishedProduct(finishedProduct)
+                .build();
+        
+        // Add items to BOM
+        for (BomItemRequest itemRequest : request.getItems()) {
+            Product rawMaterial = productRepository.findByProductId(itemRequest.getRawMaterialId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "id", itemRequest.getRawMaterialId()));
+            
+            BomItem bomItem = BomItem.builder()
+                    .rawMaterial(rawMaterial)
+                    .quantityRequired(itemRequest.getQuantityRequired())
+                    .unit(itemRequest.getUnit())
+                    .build();
+            
+            bom.addItem(bomItem);
+        }
+        
+        // Save BOM
+        BillOfMaterials savedBom = billOfMaterialsRepository.save(bom);
+        
+        // Return response
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", savedBom.getBomId());
+        response.put("finishedProductId", savedBom.getFinishedProduct().getProductId());
+        
+        return response;
+    }
+    
+    @Transactional(readOnly = true)
+    public BomResponse getBOMByFinishedProductId(String finishedProductId) {
+        // Get BOM by finished product's productId directly
+        BillOfMaterials bom = billOfMaterialsRepository.findByFinishedProductProductId(finishedProductId)
+                .orElseThrow(() -> new ResourceNotFoundException("BOM", "finishedProductId", finishedProductId));
+        
+        return mapToBomResponse(bom);
     }
     
     private Map<String, Object> mapToResponse(ProductionEntry production) {
@@ -90,27 +144,24 @@ public class ProductionService {
         return response;
     }
     
-    private Map<String, Object> mapBOMToResponse(BillOfMaterials bom) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", bom.getBomId());
-        response.put("finishedProductId", bom.getFinishedProduct().getProductId());
-        response.put("finishedProductName", bom.getFinishedProduct().getName());
-        response.put("status", bom.getStatus().name());
-        response.put("createdAt", bom.getCreatedAt());
-        
-        List<Map<String, Object>> items = bom.getItems().stream()
-                .map(item -> {
-                    Map<String, Object> itemMap = new HashMap<>();
-                    itemMap.put("id", "bom_item_" + item.getId());
-                    itemMap.put("rawMaterialId", item.getRawMaterial().getProductId());
-                    itemMap.put("rawMaterialName", item.getRawMaterial().getName());
-                    itemMap.put("quantityRequired", item.getQuantityRequired());
-                    itemMap.put("unit", item.getUnit());
-                    return itemMap;
-                })
+    private BomResponse mapToBomResponse(BillOfMaterials bom) {
+        List<BomItemResponse> items = bom.getItems().stream()
+                .map(item -> BomItemResponse.builder()
+                        .id("bom_item_" + item.getId())
+                        .rawMaterialId(item.getRawMaterial().getProductId())
+                        .rawMaterialName(item.getRawMaterial().getName())
+                        .quantityRequired(item.getQuantityRequired())
+                        .unit(item.getUnit())
+                        .build())
                 .collect(Collectors.toList());
-        response.put("items", items);
         
-        return response;
+        return BomResponse.builder()
+                .id(bom.getBomId())
+                .finishedProductId(bom.getFinishedProduct().getProductId())
+                .finishedProductName(bom.getFinishedProduct().getName())
+                .items(items)
+                .status(bom.getStatus().name())
+                .createdAt(bom.getCreatedAt())
+                .build();
     }
 }

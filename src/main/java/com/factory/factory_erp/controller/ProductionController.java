@@ -1,7 +1,10 @@
 package com.factory.factory_erp.controller;
 
+import com.factory.factory_erp.dto.request.CreateBOMRequest;
 import com.factory.factory_erp.dto.request.CreateProductionRequest;
 import com.factory.factory_erp.dto.response.ApiResponse;
+import com.factory.factory_erp.dto.response.BomResponse;
+import com.factory.factory_erp.dto.response.PaginatedBomResponse;
 import com.factory.factory_erp.dto.response.PageResponse;
 import com.factory.factory_erp.service.ProductionService;
 import jakarta.validation.Valid;
@@ -37,11 +40,26 @@ public class ProductionController {
     }
     
     @GetMapping("/bom")
-    public ResponseEntity<ApiResponse<PageResponse<Map<String, Object>>>> getAllBOMs(
+    public ResponseEntity<ApiResponse<PaginatedBomResponse>> getAllBOMs(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int limit) {
         
-        PageResponse<Map<String, Object>> response = productionService.getAllBOMs(page, limit);
+        PaginatedBomResponse response = productionService.getAllBOMs(page, limit);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+    
+    @PostMapping("/bom")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createBOM(@Valid @RequestBody CreateBOMRequest request) {
+        Map<String, Object> response = productionService.createBOM(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response, "BOM created successfully"));
+    }
+    
+    @GetMapping("/bom/{finishedProductId}")
+    public ResponseEntity<ApiResponse<BomResponse>> getBOMByFinishedProductId(
+            @PathVariable String finishedProductId) {
+        
+        BomResponse response = productionService.getBOMByFinishedProductId(finishedProductId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
